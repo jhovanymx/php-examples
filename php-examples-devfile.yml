@@ -1,0 +1,73 @@
+apiVersion: 1.0.0
+metadata:
+  name: php-mysql
+projects:
+  - name: php-examples
+    source:
+      location: 'https://github.com/jhovanymx/php-examples.git'
+      type: git
+      branch: master
+components:
+  - type: dockerimage
+    image: 'quay.io/eclipse/che-php-7:7.16.2'
+    alias: php
+    volumes:
+      - name: composer
+        containerPath: /home/user/.composer
+    endpoints:
+      - name: 8080-tcp
+        port: 8080
+    memoryLimit: 512Mi
+    mountSources: true
+  - type: dockerimage
+    image: docker.io/centos/mysql-57-centos7
+    alias: mysql
+    memoryLimit: 256Mi
+    mountSources: false
+    endpoints:
+      - name: db
+        port: 3306
+        attributes:
+          discoverable: 'true'
+    env:
+      - name: MYSQL_USER
+        value: user
+      - name: MYSQL_PASSWORD
+        value: root
+      - name: MYSQL_ROOT_PASSWORD
+        value: root
+      - name: MYSQL_DATABASE
+        value: test
+  - id: redhat/php/latest
+    memoryLimit: 1Gi
+    type: chePlugin
+  - id: redhat/php-debugger/latest
+    memoryLimit: 256Mi
+    type: chePlugin
+commands:
+  - name: Start Apache Web Server
+    actions:
+      - type: exec
+        command: >
+          if grep -q '/projects$' /etc/apache2/sites-available/000-default.conf;
+          then
+            sed -i 's|DocumentRoot /projects|DocumentRoot /projects/php-examples/public|' /etc/apache2/sites-available/000-default.conf
+          fi
+          service apache2 start
+        component: php
+  - name: Stop Apache Web Server
+    actions:
+      - type: exec
+        command: service apache2 stop
+        component: php
+  - name: Restart Apache Web Server
+    actions:
+      - type: exec
+        command: service apache2 restart
+        component: php
+  - name: Configure database
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/php-examples'
+        type: exec
+        command: php install.php
+        component: php
