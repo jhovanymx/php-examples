@@ -9,7 +9,7 @@ projects:
       branch: master
 components:
   - type: dockerimage
-    image: 'quay.io/eclipse/che-php-7:7.16.2'
+    image: 'quay.io/eclipse/che-php-7:7.20.1'
     alias: php
     volumes:
       - name: composer
@@ -51,8 +51,8 @@ commands:
         command: >
           if grep -q '/projects$' /etc/apache2/sites-available/000-default.conf;
           then
-            sed -i 's|DocumentRoot /projects|DocumentRoot /projects/php-examples/public|' /etc/apache2/sites-available/000-default.conf
-          fi
+            sed -i 's|DocumentRoot /projects|DocumentRoot /projects/php-examples|' /etc/apache2/sites-available/000-default.conf
+          fi;
           service apache2 start
         component: php
   - name: Stop Apache Web Server
@@ -65,9 +65,9 @@ commands:
       - type: exec
         command: service apache2 restart
         component: php
-  - name: Configure database
+  - name: Configure aplication
     actions:
       - workdir: '${CHE_PROJECTS_ROOT}/php-examples'
         type: exec
-        command: php install.php
+        command: php config.php
         component: php

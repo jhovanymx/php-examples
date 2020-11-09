@@ -1,5 +1,5 @@
 <?php
-    class DB{
+    class BasePdo{
         private $host;
         private $dbname;
         private $user;
