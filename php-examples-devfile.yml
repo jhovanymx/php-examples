@@ -1,34 +1,34 @@
 apiVersion: 1.0.0
 metadata:
   name: php-mysql
+attributes:
+  persistVolumes: 'false'
 projects:
   - name: php-examples
     source:
-      location: 'https://github.com/jhovanymx/php-examples.git'
       type: git
-      branch: master
+      location: 'https://github.com/jhovanymx/php-examples.git'
 components:
-  - type: dockerimage
-    image: 'quay.io/eclipse/che-php-7:7.20.1'
-    alias: php
-    volumes:
-      - name: composer
-        containerPath: /home/user/.composer
+  - id: bmewburn/vscode-intelephense-client/latest
+    type: chePlugin
+    memoryLimit: 1Gi
+  - id: felixfbecker/vscode-php-debug/latest
+    type: chePlugin
+    memoryLimit: 256Mi
+  - alias: php
+    type: dockerimage
+    image: 'quay.io/eclipse/che-php-7:7.22.0'
+    memoryLimit: 512Mi
     endpoints:
       - name: 8080-tcp
         port: 8080
-    memoryLimit: 512Mi
     mountSources: true
-  - type: dockerimage
-    image: docker.io/centos/mysql-57-centos7
-    alias: mysql
-    memoryLimit: 256Mi
-    mountSources: false
-    endpoints:
-      - name: db
-        port: 3306
-        attributes:
-          discoverable: 'true'
+    volumes:
+      - name: composer
+        containerPath: /home/user/.composer
+  - alias: mysql
+    type: dockerimage
+    image: 'docker.io/centos/mysql-57-centos7'
     env:
       - name: MYSQL_USER
         value: user
@@ -38,12 +38,13 @@ components:
         value: root
       - name: MYSQL_DATABASE
         value: test
-  - id: redhat/php/latest
-    memoryLimit: 1Gi
-    type: chePlugin
-  - id: redhat/php-debugger/latest
     memoryLimit: 256Mi
-    type: chePlugin
+    endpoints:
+      - name: db
+        port: 3306
+        attributes:
+          discoverable: 'true'
+    mountSources: false
 commands:
   - name: Start Apache Web Server
     actions:
